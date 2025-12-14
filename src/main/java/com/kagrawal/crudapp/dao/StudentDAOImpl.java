@@ -88,7 +88,7 @@ public class StudentDAOImpl implements StudentDAO {
 
     @Override
     public List<Student> getAllStudents() {
-        List<Student> studentlist = null;
+        List<Student> studentList = null;
         try (Connection con = JDBCUtils.fetchConnection();
              PreparedStatement stmt = con.prepareStatement(SELECT_ALL_SQL);
              ResultSet rs = stmt.executeQuery()) {
@@ -100,12 +100,12 @@ public class StudentDAOImpl implements StudentDAO {
                 student.setEmail(rs.getString("email"));
                 student.setMobile(rs.getString("mobile"));
 
-                studentlist.add(student);
+                studentList.add(student);
             }
 
         } catch (SQLException e) {
             throw new DAOException("Unable to fetch student",e);
         }
-        return studentlist;
+        return studentList;
     }
 }
