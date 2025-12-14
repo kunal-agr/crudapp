@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StudentDAOImpl implements StudentDAO {
@@ -89,12 +90,14 @@ public class StudentDAOImpl implements StudentDAO {
 
     @Override
     public List<Student> getAllStudents() {
-        List<Student> studentList = null;
+
+        List<Student> studentList = new ArrayList<>();
+
         try (Connection con = JDBCUtils.fetchConnection();
              PreparedStatement stmt = con.prepareStatement(SELECT_ALL_SQL);
              ResultSet rs = stmt.executeQuery()) {
 
-            while(rs.next()) {
+            while (rs.next()) {
                 Student student = new Student();
                 student.setId(rs.getInt("id"));
                 student.setName(rs.getString("name"));
@@ -105,8 +108,10 @@ public class StudentDAOImpl implements StudentDAO {
             }
 
         } catch (SQLException e) {
-            throw new DAOException("Unable to fetch student",e);
+            throw new DAOException("Unable to fetch student", e);
         }
+
         return studentList;
     }
+
 }
