@@ -54,8 +54,12 @@ public class StudentServlet extends HttpServlet {
                 default:
                     listStudents(req, resp);
             }
-        } catch (DAOException e) {
-            e.printStackTrace(); // developer logs not final
+        } catch (Exception e) {
+            req.setAttribute("errorMessage", e.getMessage());
+            req.setAttribute("rootCause", e.getCause());
+            req.setAttribute("errorException", e);
+//            e.printStackTrace();  developer logs not final
+            req.getRequestDispatcher("error.jsp").forward(req, resp);
         }
     }
 
