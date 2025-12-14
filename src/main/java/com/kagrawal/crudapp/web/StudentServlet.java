@@ -40,15 +40,15 @@ public class StudentServlet extends HttpServlet {
 
         try {
             switch (action) {
-                case "add":
+                case "add": showNewForm(req,resp);
                     break;
-                case "edit":
+                case "edit": showEditForm(req,resp);
                     break;
                 case "delete": deleteStudent(req,resp);
                     break;
-                case "insert":
+                case "insert": insertStudent(req,resp);
                     break;
-                case "update":
+                case "update": updateStudent(req,resp);
                     break;
                 case "list":
                 default:
@@ -76,5 +76,35 @@ public class StudentServlet extends HttpServlet {
         int id = Integer.parseInt(req.getParameter("id"));
         studentDAO.delete(id);
         resp.sendRedirect(req.getContextPath() + "/students?action=list&success=Deleted Successfully"); // calling view with message
+    }
+
+    private void showNewForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, DAOException {
+        req.getRequestDispatcher("student-form.jsp").forward(req, resp);
+    }
+
+    private void showEditForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, DAOException {
+        int id = Integer.parseInt(req.getParameter("id"));
+        Student st = studentDAO.getStudentById(id);
+        req.setAttribute("student",st);
+        req.getRequestDispatcher("student-form.jsp").forward(req, resp);
+    }
+
+    private void insertStudent(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, DAOException {
+        String name = req.getParameter("name");
+        String email = req.getParameter("email");
+        String mobile = req.getParameter("mobile");
+
+        studentDAO.insert(new Student(name.trim(),email.trim(),mobile.trim()));
+        resp.sendRedirect("students?action=list&success=insert Successfully");
+    }
+
+    private void updateStudent(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, DAOException {
+        int id = Integer.parseInt(req.getParameter("updateId"));
+        String name = req.getParameter("name");
+        String email = req.getParameter("email");
+        String mobile = req.getParameter("mobile");
+
+        studentDAO.update(new Student(id,name.trim(),email.trim(),mobile.trim()));
+        resp.sendRedirect("students?action=list&success=Updated Successfully");
     }
 }
