@@ -44,7 +44,7 @@ public class StudentServlet extends HttpServlet {
                     break;
                 case "edit":
                     break;
-                case "delete":
+                case "delete": // deleteStudent(req,resp);
                     break;
                 case "insert":
                     break;
@@ -66,4 +66,9 @@ public class StudentServlet extends HttpServlet {
         req.setAttribute("students", studentList);
         req.getRequestDispatcher("student-list.jsp").forward(req, resp);
     }
+
+//    private  void deleteStudent(HttpServletRequest req, HttpServletResponse resp)
+//            throws ServletException, IOException, DAOException {
+//
+//    }
 }
