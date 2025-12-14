@@ -44,7 +44,7 @@ public class StudentServlet extends HttpServlet {
                     break;
                 case "edit":
                     break;
-                case "delete": // deleteStudent(req,resp);
+                case "delete": deleteStudent(req,resp);
                     break;
                 case "insert":
                     break;
@@ -55,7 +55,7 @@ public class StudentServlet extends HttpServlet {
                     listStudents(req, resp);
             }
         } catch (DAOException e) {
-            throw new ServletException(e);
+            e.printStackTrace(); // developer logs not final
         }
     }
 
@@ -67,8 +67,10 @@ public class StudentServlet extends HttpServlet {
         req.getRequestDispatcher("student-list.jsp").forward(req, resp);
     }
 
-//    private  void deleteStudent(HttpServletRequest req, HttpServletResponse resp)
-//            throws ServletException, IOException, DAOException {
-//
-//    }
+    private  void deleteStudent(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException, DAOException {
+        int id = Integer.parseInt(req.getParameter("id"));
+        studentDAO.delete(id);
+        resp.sendRedirect(req.getContextPath() + "/students?action=list&success=Deleted Successfully"); // calling view with message
+    }
 }

@@ -36,16 +36,18 @@ public class StudentDAOImpl implements StudentDAO {
 
     @Override
     public void delete(int id) {
-        try (Connection con = JDBCUtils.fetchConnection();
-             PreparedStatement stmt = con.prepareStatement(DELETE_SQL)) {
 
-            stmt.setInt(1,id);
-            stmt.executeUpdate();
+        try (Connection con = JDBCUtils.fetchConnection();
+             PreparedStatement ps = con.prepareStatement(DELETE_SQL)) {
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DAOException("Unable to delete student",e);
+            throw new DAOException("Unable to delete student", e);
         }
     }
+
 
     @Override
     public Student getStudentById(int id) {
