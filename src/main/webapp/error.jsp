@@ -1,29 +1,44 @@
 <%@ page isErrorPage="true" %>
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>MVC CRUD FORM</title>
-        <link rel = "stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"></link>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    </head>
-    <body class="container mt-5">
-        <h2 class="text-danger">Error Occurred</h2>
-        <h5 class="text-muted">something went wrong...</h5>
+<head>
+<title>Error Occurred</title>
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css">
+</head>
 
-        <%
-            String errorMessage = (String) request.getAttribute("errorMessage");
-            String errorCause = (String) request.getAttribute("errorCause");
-        %>
-        <div class="card mb-3">
-            <div class="card-header bg-dark text-light">
-                Debugging Information
-            </div>
+<body class="container my-5">
+    <h2 class="text-danger">Something went wrong!</h2>
+    <p class="text-muted">We encountered an issue processing your request.</p>
 
-            <div class="card-body">
-                <p><strong><%= errorMessage %></strong></p>
-                <p><strong><%= errorCause %></strong></p>
-                <a href="students?action=list" class="btn btn-primary">Go Back</a>
-            </div>
+    <div class="card mt-4">
+        <div class="card-header bg-dark text-white">
+            Developer Debug Information
         </div>
+        <div class="card-body bg-light">
 
-    </body>
+            <p><strong>Error Message:</strong></p>
+            <pre><%= request.getAttribute("errorMessage") %></pre>
+
+            <%
+                Throwable ex = (Throwable) request.getAttribute("errorException");
+                Throwable cause = (Throwable) request.getAttribute("rootCause");
+            %>
+
+            <% if (cause != null) { %>
+                <p><strong>Cause:</strong></p>
+                <pre><%= cause.toString() %></pre>
+            <% } else if (ex != null) { %>
+                <p><strong>Exception:</strong></p>
+                <pre><%= ex.toString() %></pre>
+            <% } else { %>
+                <pre>No serious error details </pre>
+            <% } %>
+
+        </div>
+    </div>
+
+    <a href="students?action=list" class="btn btn-primary mt-3">Back to Home</a>
+
+</body>
 </html>
