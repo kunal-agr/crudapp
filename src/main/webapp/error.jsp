@@ -11,6 +11,7 @@
 
         <%
             String errorMessage = (String) request.getAttribute("errorMessage");
+            String errorCause = (String) request.getAttribute("errorCause");
         %>
         <div class="card mb-3">
             <div class="card-header bg-dark text-light">
@@ -19,6 +20,7 @@
 
             <div class="card-body">
                 <p><strong><%= errorMessage %></strong></p>
+                <p><strong><%= errorCause %></strong></p>
                 <a href="students?action=list" class="btn btn-primary">Go Back</a>
             </div>
         </div>
