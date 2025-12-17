@@ -94,8 +94,8 @@ java-crud-mvc-playground
 ---
 
 ## Architecture Overview 🏗️
+<img width="1024" height="1024" alt="flowdigram" src="https://github.com/user-attachments/assets/2da59f7c-d586-4fb7-8850-6be6fbec144c" />
 
-<img width="1024" height="1024" alt="readme_flow_diagram" src="https://github.com/user-attachments/assets/8d423c80-2408-4469-8e8a-f4733a1b5680" />
 
 
 The project follows a **Model–View–Controller (MVC)** pattern:
