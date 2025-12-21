@@ -2,6 +2,7 @@ package com.kagrawal.crudapp.web;
 
 import com.kagrawal.crudapp.Exception.DAOException;
 import com.kagrawal.crudapp.dao.StudentDAOImpl;
+import com.kagrawal.crudapp.model.Pagination;
 import com.kagrawal.crudapp.model.Student;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -67,8 +68,26 @@ public class StudentServlet extends HttpServlet {
     private void listStudents(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException, DAOException {
 
-        List<Student> studentList = studentDAO.getAllStudents();
+        int pageSize = 10;
+        int pageNo = 1;
+
+        String pageParam = req.getParameter("page");
+
+        if (pageParam != null) {
+            pageNo = Integer.parseInt(pageParam);
+        }
+
+
+        Pagination pagination = new Pagination(pageNo, pageSize);
+
+        List<Student> studentList = studentDAO.getSelectedStudents(pagination);
+        int totalRecords = studentDAO.getTotalStudents();
+        int totalPages = (int) Math.ceil((double) (totalRecords / pageSize));
+
         req.setAttribute("students", studentList);
+        req.setAttribute("currentPage", pageNo);
+        req.setAttribute("totalPages", totalPages);
+
         req.getRequestDispatcher("student-list.jsp").forward(req, resp);
     }
 
