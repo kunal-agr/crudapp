@@ -68,25 +68,34 @@ public class StudentServlet extends HttpServlet {
     private void listStudents(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException, DAOException {
 
-        int pageSize = 10;
+        int pageSize = 5;
         int pageNo = 1;
 
-        String pageParam = req.getParameter("page");
+        if (req.getParameter("page") != null)
+            pageNo = Integer.parseInt(req.getParameter("page"));
 
-        if (pageParam != null) {
-            pageNo = Integer.parseInt(pageParam);
-        }
-
+        if(req.getParameter("pageSize") != null)
+                pageSize = Integer.parseInt(req.getParameter("pageSize"));
 
         Pagination pagination = new Pagination(pageNo, pageSize);
 
-        List<Student> studentList = studentDAO.getSelectedStudents(pagination);
         int totalRecords = studentDAO.getTotalStudents();
-        int totalPages = (int) Math.ceil((double) (totalRecords / pageSize));
+        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
 
+
+        if (pageNo < 1)
+            pageNo = 1;
+        if (pageNo > totalPages)
+            pageNo = totalPages;
+
+        pagination.setPageNo(pageNo);
+
+        List<Student> studentList = studentDAO.getSelectedStudents(pagination);
         req.setAttribute("students", studentList);
         req.setAttribute("currentPage", pageNo);
         req.setAttribute("totalPages", totalPages);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalRecords", totalRecords);
 
         req.getRequestDispatcher("student-list.jsp").forward(req, resp);
     }
