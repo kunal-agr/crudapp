@@ -8,56 +8,67 @@
 [![Bootstrap 5](https://img.shields.io/badge/Bootstrap-5-purple)](https://getbootstrap.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-
-Welcome to the **MVC Student Manager**! 🎉
-This project is a **CRUD application** developed following **industry standards**, implementing the **MVC architecture** with clean separation of responsibilities, validation, centralized error handling, and attractive UI/UX.
+A **Student Management CRUD application** built using **Java MVC architecture**, following clean separation of concerns, validation, centralized exception handling, and scalable UI design.
 
 ---
 
 ## Features ✨
 
-* **Core CRUD Operations**
+### v1.0 – Core CRUD
 
-  * Add Student
-  * View Student List
-  * Edit Student
-  * Delete Student
-* **Validation**
+* Add Student
+* View Student List
+* Edit Student
+* Delete Student
+* Client-side validation (HTML5)
+* Server-side validation (Servlet)
+* Centralized error handling (`DAOException`)
+* Clean Bootstrap-based UI
 
-  * Client-side validation using HTML5
-  * Server-side validation in Servlet
-* **UI / UX Enhancements**
+### v1.1 – Enhanced UX & Scalability
 
-  * Responsive layout using Bootstrap 5
-  * Clean and consistent action buttons
-  * User-friendly messages and alerts
-* **Centralized Exception Handling**
+* Pagination for student listing
+* Reusable navigation bar
+* Improved UI consistency
+* Better user navigation flow
+* Pagination model abstraction
 
-  * Custom `DAOException`
-  * Dedicated error page (`error.jsp`)
-* **Clean MVC Separation**
+---
 
-  * Model → Data representation
-  * DAO → Database access
-  * Controller → Request handling
-  * View → UI rendering
+## New Features 🆕
+
+* Pagination support using a dedicated `Pagination` model
+* Common navigation bar across all pages
+* Cleaner page transitions and navigation flow
+* Improved scalability for large datasets
+
+---
+
+## Git Hygiene 🧹
+
+This project follows **clean Git practices** to maintain readability and collaboration quality:
+
+* Meaningful commit messages (`feat`, `fix`, `docs`, `refactor`)
+* Logical commits for each feature or fix
+* No unnecessary files committed
+* Clear version progression (`v1.0` → `v1.1`)
+* Organized project and resource structure
 
 ---
 
 ## Tech Stack 🛠️
 
-| Layer                    | Technology                    |
-| ------------------------ | ----------------------------- |
-| Frontend (View)          | JSP, HTML5, CSS3, Bootstrap 5 |
-| UI Icons                 | Font Awesome                  |
-| Controller               | Jakarta Servlet API           |
-| Backend (Business Logic) | Java                          |
-| Database Access          | JDBC                          |
-| Database                 | PostgreSQL                    |
-| Application Server       | Apache Tomcat 11              |
-| Build Tool               | Maven                         |
-| Architecture Pattern     | MVC (Model–View–Controller)   |
-| Version Control          | Git & GitHub                  |
+| Layer           | Technology                    |
+| --------------- | ----------------------------- |
+| Frontend (View) | JSP, HTML5, CSS3, Bootstrap 5 |
+| Controller      | Jakarta Servlet API           |
+| Backend         | Java 17                       |
+| Database Access | JDBC                          |
+| Database        | PostgreSQL                    |
+| Server          | Apache Tomcat 11              |
+| Build Tool      | Maven                         |
+| Architecture    | MVC                           |
+| Version Control | Git & GitHub                  |
 
 ---
 
@@ -66,27 +77,38 @@ This project is a **CRUD application** developed following **industry standards*
 ```
 java-crud-mvc-playground
 │
-├── src/main/java
-│   └── com/nsgacademy/crudmvc
-│       ├── model
-│       │   └── Student.java
+├── screenshots
+│   ├── v1.0
+│   └── v1.1
+│
+├── src
+│   └── main
+│       ├── java
+│       │   └── com.kagrawal.crudapp
+│       │       ├── dao
+│       │       │   ├── StudentDAO.java
+│       │       │   └── StudentDAOImpl.java
+│       │       │
+│       │       ├── Exception
+│       │       │   └── DAOException.java
+│       │       │
+│       │       ├── model
+│       │       │   ├── Student.java
+│       │       │   └── Pagination.java
+│       │       │
+│       │       ├── utils
+│       │       │   └── JDBCUtils.java
+│       │       │
+│       │       └── web
+│       │           └── StudentServlet.java
 │       │
-│       ├── dao
-│       │   └── StudentDAO.java
-│       │
-│       ├── exception
-│       │   └── DAOException.java
-│       │
-│       ├── utils
-│       │   └── JDBCUtils.java
-│       │
-│       └── web
-│           └── StudentServlet.java
+│       └── resources
 │
 ├── src/main/webapp
 │   ├── student-list.jsp
 │   ├── student-form.jsp
-│   └── error.jsp
+│   ├── error.jsp
+│   └── navbar.jsp
 │
 └── README.md
 ```
@@ -94,16 +116,13 @@ java-crud-mvc-playground
 ---
 
 ## Architecture Overview 🏗️
-<img width="1024" height="1024" alt="flowdigram" src="https://github.com/user-attachments/assets/2da59f7c-d586-4fb7-8850-6be6fbec144c" />
 
+The application follows the **Model–View–Controller (MVC)** pattern:
 
-
-The project follows a **Model–View–Controller (MVC)** pattern:
-
-* **Model**: Student.java represents the student entity.
-* **DAO**: Handles database CRUD operations.
-* **Controller**: Servlets handle requests and responses.
-* **View**: JSP pages render the UI.
+* **Model** → `Student`, `Pagination`
+* **DAO** → Database operations using JDBC
+* **Controller** → `StudentServlet`
+* **View** → JSP pages with Bootstrap UI
 
 ---
 
@@ -132,64 +151,57 @@ private static final String PASS = "password";
 
 ---
 
-## How to Run the Project ▶️
+## Screenshots 📸
 
-### Prerequisites
+### Version v1.0 – Core CRUD
 
-* JDK 17 or higher
-* PostgreSQL installed and running
-* Apache Tomcat 11
-* IDE (IntelliJ IDEA / Eclipse)
+| Feature          | Preview                                                    |
+| ---------------- | ---------------------------------------------------------- |
+| Student List     | <img src="screenshots/v1.0/student-list.png" width="400"/> |
+| Add Student      | <img src="screenshots/v1.0/add-student.png" width="400"/>  |
+| Edit Student     | <img src="screenshots/v1.0/edit-student.png" width="400"/> |
+| Validation Error | <img src="screenshots/v1.0/validation.png" width="400"/>   |
+| Error Page       | <img src="screenshots/v1.0/error.png" width="400"/>        |
 
-### Clone the Repo
+---
+
+### Version v1.1 – Pagination & Navigation
+
+| Feature        | Preview                                                      |
+| -------------- | ------------------------------------------------------------ |
+| Pagination     | <img src="screenshots/v1.1/pagination.png" width="400"/>     |
+| Navigation Bar | <img src="screenshots/v1.1/navbar.png" width="400"/>         |
+| Paginated List | <img src="screenshots/v1.1/paginated-list.png" width="400"/> |
+
+---
+
+## How to Run ▶️
+
+1. Clone the repository
 
 ```bash
 git clone https://github.com/kunal-agr/crudapp.git
 ```
 
-### Create Database
+2. Create database
 
 ```sql
 CREATE DATABASE studentdb;
 ```
 
-### Import Project
+3. Import as Maven project in IDE
+4. Configure Apache Tomcat 11
+5. Run and access:
 
-* Open IDE
-* Import as Maven Project
-* Configure Apache Tomcat 11 in IDE
+```
+http://localhost:8080/<project-context>
+```
 
-### Run Application
-
-* Deploy project on Tomcat
-* Access application at: `http://localhost:8080/<project-context>`
-
----
-
-## Screenshots 📸
-
-<!-- Add screenshots here -->
-
-<img width="1366" height="720" alt="student-list" src="https://github.com/user-attachments/assets/b9b07236-f327-48b8-af11-46f9e5d07e1e" />
-<img width="1366" height="720" alt="add_form" src="https://github.com/user-attachments/assets/2008830c-0ae7-489c-b6c6-d554b7b43863" />
-<img width="1366" height="720" alt="after_added" src="https://github.com/user-attachments/assets/d5270974-2c38-4e2c-9383-d3f7dbb653c1" />
-<img width="1366" height="720" alt="edit_form" src="https://github.com/user-attachments/assets/d7add624-b170-4ebe-bd1e-717af8828c7c" />
-<img width="1366" height="720" alt="after_edit" src="https://github.com/user-attachments/assets/45d0ed1b-c719-4471-a4c9-5d17c5dd8b09" />
-<img width="1366" height="720" alt="delete_conform" src="https://github.com/user-attachments/assets/2bec6e6e-20ac-4a19-a463-6fb8fd6cf609" />
-<img width="1366" height="720" alt="delete_message" src="https://github.com/user-attachments/assets/0f874879-54fd-4745-90c7-ebe7bc37174c" />
-<img width="1366" height="720" alt="validation_image" src="https://github.com/user-attachments/assets/c34056a4-152e-4350-a22d-d87b8b3c7f87" />
-<img width="1366" height="720" alt="error" src="https://github.com/user-attachments/assets/b5b8d381-ee3a-4001-9a66-769108b59020" />
 ---
 
 ## Purpose 🎯
 
-This project was made to practice **MVC architecture**, **CRUD operations**, **validation**, **centralized error handling**, and **professional UI/UX design**. Learned how to separate responsibilities properly.
-
----
-
-## Contribution 🤝
-
-Feel free to **fork** this repo and contribute! 👐
+This project was built to practice **MVC architecture**, **CRUD operations**, **pagination**, **validation**, and **professional UI structuring** following industry-level standards.
 
 ---
 
@@ -199,7 +211,6 @@ This project is licensed under the MIT License.
 
 ---
 
-## Acknowledgement 🙏
+## Contribution 🤝
 
-* Open source community for inspiration and guidance.
-* Thank you f
+Fork the repository and feel free to improve or extend the project.
