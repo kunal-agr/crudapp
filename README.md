@@ -108,7 +108,6 @@ java-crud-mvc-playground
 │   ├── student-list.jsp
 │   ├── student-form.jsp
 │   ├── error.jsp
-│   └── navbar.jsp
 │
 └── README.md
 ```
