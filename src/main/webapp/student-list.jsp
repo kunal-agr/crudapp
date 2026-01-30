@@ -1,6 +1,7 @@
-<%@ page language="java" import="java.util.*,com.kagrawal.crudapp.model.Student" %>
+<!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
         <title>MVC CRUD APPLICATION</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
@@ -11,24 +12,7 @@
     <h2 class="text-center mb-3">MVC CRUD APPLICATION</h2>
     <h2 class="text-center mb-3">SERVLET + JSP + JDBC</h2>
 
-    <%
-        String success = request.getParameter("success");
-        if (success != null) {
-    %>
-    <div class="alert alert-success text-center"><%= success %></div>
-    <%
-        }
-
-        int currentPage = (request.getAttribute("currentPage") != null) ? (int) request.getAttribute("currentPage") : 1;
-        int totalPages = (request.getAttribute("totalPages") != null) ? (int) request.getAttribute("totalPages") : 1;
-        int pageSize = (request.getAttribute("pageSize") != null) ? (int) request.getAttribute("pageSize") : 5;
-        int totalRecords = (request.getAttribute("totalRecords")!=null) ? (int) request.getAttribute("totalRecords") : 5;
-
-        int start = (currentPage - 1) * pageSize + 1;
-        int end = Math.min(start + pageSize - 1, totalRecords);
-    %>
-
-    <a href="students?action=add" class="btn btn-outline-primary mb-3">
+    <a href="student-form.jsp" class="btn btn-outline-primary mb-3">
         <i class="fa-solid fa-user-plus me-2"></i> Add Student
     </a>
 
@@ -43,117 +27,133 @@
         </tr>
         </thead>
 
-        <tbody>
-        <%
-            List<Student> students = (List<Student>) request.getAttribute("students");
-            int cnt = 1;
-
-            if (students != null && !students.isEmpty()) {
-                for (Student s : students) {
-        %>
-        <tr>
-            <td class="text-center"><%= cnt++ %></td>
-            <td class="text-center"><%= s.getName() %></td>
-            <td class="text-center"><%= s.getEmail() %></td>
-            <td class="text-center"><%= s.getMobile() %></td>
-            <td class="text-center">
-                <a href="students?action=edit&id=<%= s.getId() %>" class="btn btn-info btn-sm mx-1">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </a>
-                <a href="students?action=delete&id=<%= s.getId() %>"
-                   onclick="return confirm('Are you sure you want to delete?')"
-                   class="btn btn-danger btn-sm mx-1">
-                    <i class="fa-solid fa-trash-can"></i>
-                </a>
-            </td>
-        </tr>
-        <%
-                }
-            } else {
-        %>
-        <tr>
-            <td colspan="5" class="text-center">No Students Found</td>
-        </tr>
-        <%
-            }
-        %>
+        <tbody id="tableBody">
+            <tr>
+                <td colspan="5" class="text-center">Loading...</td>
+            </tr>
         </tbody>
     </table>
 
     <div class="d-flex justify-content-between mb-3">
-        <!-- PAGE SIZE -->
         <div class="text-muted">
             Showing
-            <strong><%=start%> <i class="fa-solid fa-arrow-right"></i><%=end%></strong>
-             of
-             <strong><%=totalRecords %></strong>
+            <strong id="range"></strong>
+            of
+            <strong id="totalRecords"></strong>
         </div>
-        <form action="students" method="get" class="d-flex align-items-center mb-3 me-2">
+
+        <div class="d-flex align-items-center">
             <span class="me-2">Show</span>
-
-            <select name="pageSize"
-                    class="form-select form-select-sm w-auto"
-                    onchange="this.form.submit()">
-                <option value="5"   <%= pageSize == 5   ? "selected" : "" %>>5</option>
-                <option value="10"  <%= pageSize == 10  ? "selected" : "" %>>10</option>
-                <option value="20"  <%= pageSize == 20  ? "selected" : "" %>>20</option>
-                <option value="50"  <%= pageSize == 50  ? "selected" : "" %>>50</option>
-                <option value="100" <%= pageSize == 100 ? "selected" : "" %>>100</option>
-                <option value="200" <%= pageSize == 200 ? "selected" : "" %>>200</option>
-
+            <select id="pageSize" class="form-select form-select-sm w-auto">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
             </select>
             <span class="ms-2">entries</span>
-        </form>
-
-
-        <!-- GO TO PAGE -->
-        <form action="students" method="get" class="d-flex align-items-center mb-3">
-            <span class="text-muted me-2">Go</span>
-            <input type="number" name="page" min="1" max="<%= totalPages %>"
-                   class="form-control form-control-sm me-2" style="width:70px;">
-            <input type="hidden" name="pageSize" value="<%= pageSize %>">
-            <button class="btn btn-sm btn-primary">GO</button>
-        </form>
+        </div>
     </div>
 
-    <% if (totalPages > 1) {%>
-        <!-- PAGINATION -->
-        <nav>
-            <ul class="pagination justify-content-center">
+    <nav>
+        <ul class="pagination justify-content-center" id="pagination"></ul>
+    </nav>
 
-                <li class="page-item <%= currentPage == 1 ? "disabled" : "" %>">
-                    <a class="page-link" href="students?page=1&pageSize=<%= pageSize %>&pageSize=<%=pageSize%>
-                    ">First</a>
-                </li>
+    <script>
+        let page = 1;
+        let size = 5;
 
-                <li class="page-item <%= currentPage == 1 ? "disabled" : "" %>">
-                    <a class="page-link"
-                       href="students?page=<%= currentPage - 1 %>&pageSize=<%=pageSize%>">&laquo;</a>
-                </li>
+        const api = '<%=request.getContextPath()%>/api/students';
 
-                <%
-                    for (int i = 1; i <= totalPages; i++) {
-                %>
-                <li class="page-item <%= i == currentPage ? "active" : "" %>">
-                    <a class="page-link"
-                       href="students?page=<%= i %>&pageSize=<%=pageSize%>"><%= i %></a>
-                </li>
-                <%
+        function loadStudents() {
+            fetch(`${api}?page=${page}&size=${size}`)
+                .then(res => res.json())
+                .then(json => {
+                    const tbody = document.getElementById("tableBody");
+                    tbody.innerHTML = "";
+
+                    if (json.data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center">No Students Found</td></tr>`;
+                        return;
                     }
-                %>
 
-                <li class="page-item <%= currentPage == totalPages ? "disabled" : "" %>">
-                    <a class="page-link"
-                       href="students?page=<%= currentPage + 1 %>&pageSize=<%=pageSize%>">&raquo;</a>
-                </li>
+                    json.data.forEach((s, i) => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="text-center">${(page - 1) * size + i + 1}</td>
+                                <td class="text-center">${s.name}</td>
+                                <td class="text-center">${s.email}</td>
+                                <td class="text-center">${s.mobile}</td>
+                                <td class="text-center">
+                                    <a href="student-form.jsp?id=${s.id}" class="btn btn-info btn-sm mx-1">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                    <button class="btn btn-danger btn-sm mx-1" onclick="deleteStudent(${s.id})">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
 
-                <li class="page-item <%= currentPage == totalPages ? "disabled" : "" %>">
-                    <a class="page-link"
-                       href="students?page=<%= totalPages %>&pageSize=<%=pageSize%>">Last</a>
-                </li>
+                    const start = (page - 1) * size + 1;
+                    const end = Math.min(start + size - 1, json.total);
 
-            </ul>
-        </nav>
-    <% } %>
+                    document.getElementById("range").innerText = `${start} → ${end}`;
+                    document.getElementById("totalRecords").innerText = json.total;
+
+                    renderPagination(json.total);
+                });
+        }
+
+        function renderPagination(total) {
+            const totalPages = Math.ceil(total / size);
+            const ul = document.getElementById("pagination");
+            ul.innerHTML = "";
+
+            const add = (label, p, disabled, active) => {
+                ul.innerHTML += `
+                    <li class="page-item ${disabled ? "disabled" : ""} ${active ? "active" : ""}">
+                        <a class="page-link" href="#" onclick="go(${p})">${label}</a>
+                    </li>
+                `;
+            };
+
+            add("First", 1, page === 1, false);
+            add("&laquo;", page - 1, page === 1, false);
+
+            for (let i = 1; i <= totalPages; i++) {
+                add(i, i, false, i === page);
+            }
+
+            add("&raquo;", page + 1, page === totalPages, false);
+            add("Last", totalPages, page === totalPages, false);
+        }
+
+        function go(p) {
+            if (p < 1)
+                return;
+            page = p;
+            loadStudents();
+        }
+
+        function deleteStudent(id) {
+            if (!confirm("Are you sure you want to delete?"))
+                return;
+
+            fetch(`${api}/${id}`, { method: "DELETE" })
+                .then(() => loadStudents());
+        }
+
+        document.getElementById("pageSize").addEventListener("change", e => {
+            size = e.target.value;
+            page = 1;
+            loadStudents();
+        });
+
+        loadStudents();
+    </script>
+
     </body>
 </html>

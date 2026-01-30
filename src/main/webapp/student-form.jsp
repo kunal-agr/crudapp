@@ -1,70 +1,120 @@
-<%@ page language="java" import="com.kagrawal.crudapp.model.Student" %>
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>MVC CRUD FORM</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    </head>
+<head>
+    <title>MVC CRUD FORM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+</head>
 
-    <body class="container">
+<body class="container mt-4">
 
-        <h2 class="text-center mb-3">MVC CRUD APPLICATION</h2>
-        <h2 class="text-center mb-3">SERVLET + JSP + JDBC</h2>
+<h2 class="text-center mb-3">MVC CRUD APPLICATION</h2>
+<h2 class="text-center mb-3">SERVLET + JSP + JDBC</h2>
 
-        <%
-            Student student = (Student) request.getAttribute("student");
-            boolean isEdit = (student != null);
+<h4 class="text-danger mb-4" id="title">Add Student</h4>
 
-            String nameError = (String) request.getAttribute("nameError");
-            String emailError = (String) request.getAttribute("emailError");
-            String mobileError = (String) request.getAttribute("mobileError");
-        %>
+<div class="mb-3">
+    <label>Name</label>
+    <input class="form-control" type="text" id="name"
+           placeholder="Enter Name"
+           required
+           pattern="[A-Za-z ]{3,50}">
+    <p class="text-danger" id="nameError"></p>
+</div>
 
-        <h4 class="text-danger mb-4"><%= isEdit ? "Edit Student" : "Add Student" %></h4>
+<div class="mb-3">
+    <label>Email</label>
+    <input class="form-control" type="email" id="email"
+           placeholder="Enter Email"
+           required>
+    <p class="text-danger" id="emailError"></p>
+</div>
 
-        <form action="students?action=<%= isEdit ? "update" : "insert" %>" method="post">
+<div class="mb-3">
+    <label>Mobile</label>
+    <input class="form-control" type="text" id="mobile"
+           placeholder="Enter Mobile"
+           required
+           pattern="[0-9]{10}">
+    <p class="text-danger" id="mobileError"></p>
+</div>
 
-            <% if (isEdit) { %>
-                <input type="hidden" name="updateId" value="<%= student.getId() %>">
-            <% } %>
+<button class="btn btn-success" onclick="save()">Save</button>
+<a href="student-list.jsp" class="btn btn-secondary">Cancel</a>
 
-            <div class="mb-3">
-                <label>Name</label>
-                <input class="form-control" type="text" name="name"
-                value="<%= (request.getParameter("name") != null) ? request.getParameter("name") : (student != null ? student.getName() : "") %>"
-                placeholder="Enter Name"
-                required
-                pattern="[A-Za-z ]{3,50}"
-                title="name should be atleast 3 to 50"
-                >
-                <p class="text-danger"><%= nameError != null ? nameError : "" %></p>
-            </div>
+<script>
+const api = '<%=request.getContextPath()%>/api/students';
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
 
-            <div class="mb-3">
-                <label>Email</label>
-                <input class="form-control" type="email" name="email"
-                value="<%=(request.getParameter("email") != null) ? request.getParameter("email") : (student != null ? student.getEmail() : "") %>"
-                placeholder="Enter Email"
-                required
-                >
-                <p class="text-danger"><%= emailError != null ? emailError : "" %></p>
-            </div>
+if (id) {
+    document.getElementById("title").innerText = "Edit Student";
+    loadStudent(id);
+}
 
-            <div class="mb-3">
-                <label>Mobile</label>
-                <input class="form-control" type="text" name="mobile"
-                value="<%=(request.getParameter("mobile") != null) ? request.getParameter("mobile") : (student != null ? student.getMobile() : "") %>"
-                placeholder="Enter Mobile"
-                required
-                pattern="[0-9]{10}"
-                title="Number should be of 10 digits"
-                >
-                <p class="text-danger"><%= mobileError != null ? mobileError : "" %></p>
-            </div>
+function loadStudent(id) {
+    fetch(`${api}/${id}`)
+        .then(res => res.json())
+        .then(s => {
+            document.getElementById("name").value = s.name;
+            document.getElementById("email").value = s.email;
+            document.getElementById("mobile").value = s.mobile;
+        });
+}
 
-            <button type="submit" class="btn btn-success">Save</button>
-            <a href="students?action=list" class="btn btn-secondary">Cancel</a>
+function save() {
+    clearErrors();
 
-        </form>
+    const student = {
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        mobile: document.getElementById("mobile").value.trim()
+    };
 
-    </body>
+    if (!validate(student)) return;
+
+    fetch(id ? `${api}/${id}` : api, {
+        method: id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(student)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Failed");
+        window.location.href = "student-list.jsp";
+    })
+    .catch(() => alert("Something went wrong"));
+}
+
+function validate(s) {
+    let ok = true;
+
+    if (s.name.length < 3) {
+        showError("nameError", "Name must be at least 3 characters");
+        ok = false;
+    }
+
+    if (!s.email.includes("@")) {
+        showError("emailError", "Invalid email");
+        ok = false;
+    }
+
+    if (!/^[0-9]{10}$/.test(s.mobile)) {
+        showError("mobileError", "Mobile must be 10 digits");
+        ok = false;
+    }
+
+    return ok;
+}
+
+function showError(id, msg) {
+    document.getElementById(id).innerText = msg;
+}
+
+function clearErrors() {
+    ["nameError","emailError","mobileError"].forEach(e => {
+        document.getElementById(e).innerText = "";
+    });
+}
+</script>
+
+</body>
 </html>
