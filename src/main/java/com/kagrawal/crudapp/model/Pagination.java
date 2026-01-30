@@ -4,6 +4,7 @@ public class Pagination {
     private int pageNo;
     private int pageSize;
 
+    public Pagination() {}
     public Pagination(int pageNo, int pageSize) {
         this.pageNo = pageNo;
         this.pageSize = pageSize;
