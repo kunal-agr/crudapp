@@ -3,14 +3,15 @@
     <head>
         <meta charset="UTF-8">
         <title>MVC CRUD APPLICATION</title>
+
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     </head>
 
     <body class="container mt-4">
 
-    <h2 class="text-center mb-3">MVC CRUD APPLICATION</h2>
-    <h2 class="text-center mb-3">SERVLET + JSP + JDBC</h2>
+    <h2 class="text-center mb-2">MVC CRUD APPLICATION</h2>
+    <h5 class="text-center mb-4">SERVLET + JSP + JDBC</h5>
 
     <a href="student-form.jsp" class="btn btn-outline-primary mb-3">
         <i class="fa-solid fa-user-plus me-2"></i> Add Student
@@ -34,12 +35,9 @@
         </tbody>
     </table>
 
-    <div class="d-flex justify-content-between mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="text-muted">
-            Showing
-            <strong id="range"></strong>
-            of
-            <strong id="totalRecords"></strong>
+            Showing <strong id="range"></strong> of <strong id="totalRecords"></strong>
         </div>
 
         <div class="d-flex align-items-center">
@@ -49,8 +47,6 @@
                 <option value="10">10</option>
                 <option value="20">20</option>
                 <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="200">200</option>
             </select>
             <span class="ms-2">entries</span>
         </div>
@@ -86,10 +82,10 @@
                                 <td class="text-center">${s.email}</td>
                                 <td class="text-center">${s.mobile}</td>
                                 <td class="text-center">
-                                    <a href="student-form.jsp?id=${s.id}" class="btn btn-info btn-sm mx-1">
+                                    <a href="student-form.jsp?id=${s.id}" class="btn btn-info btn-sm">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    <button class="btn btn-danger btn-sm mx-1" onclick="deleteStudent(${s.id})">
+                                    <button class="btn btn-danger btn-sm ms-1" onclick="deleteStudent(${s.id})">
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
                                 </td>
@@ -100,7 +96,7 @@
                     const start = (page - 1) * size + 1;
                     const end = Math.min(start + size - 1, json.total);
 
-                    document.getElementById("range").innerText = `${start} → ${end}`;
+                    document.getElementById("range").innerHTML = `${start} &#8594; ${end}`;
                     document.getElementById("totalRecords").innerText = json.total;
 
                     renderPagination(json.total);
@@ -132,15 +128,13 @@
         }
 
         function go(p) {
-            if (p < 1)
-                return;
+            if (p < 1) return;
             page = p;
             loadStudents();
         }
 
         function deleteStudent(id) {
-            if (!confirm("Are you sure you want to delete?"))
-                return;
+            if (!confirm("Are you sure?")) return;
 
             fetch(`${api}/${id}`, { method: "DELETE" })
                 .then(() => loadStudents());
