@@ -19,9 +19,17 @@ public class JDBCUtils {
     }
 
     public static Connection fetchConnection() throws SQLException {
-        if (URL == null || USER == null || PASS == null) {
+        String url = System.getenv("DB_URL");
+        String user = System.getenv("DB_USER");
+        String pass = System.getenv("DB_PASSWORD");
+
+        System.out.println("DB_URL: " + (url == null ? "NULL" : "SET"));
+        System.out.println("DB_USER: " + (user == null ? "NULL" : "SET"));
+        System.out.println("DB_PASSWORD: " + (pass == null ? "NULL" : "SET"));
+
+        if (url == null || user == null || pass == null) {
             throw new RuntimeException("Database environment variables are missing");
         }
-        return DriverManager.getConnection(URL, USER, PASS);
+        return DriverManager.getConnection(url, user, pass);
     }
 }
