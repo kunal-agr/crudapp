@@ -15,7 +15,7 @@ FROM tomcat:11.0-jdk21-temurin
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-COPY --from=build /app/target/crudApp.war /usr/local/tomcat/webapps/crudApp.war
+COPY --from=build /app/target/crudApp.war /usr/local/tomcat/webapps/ROOT.war
 
 EXPOSE 8080
 
