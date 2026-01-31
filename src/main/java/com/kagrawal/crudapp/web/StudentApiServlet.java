@@ -20,91 +20,95 @@ import java.util.Map;
 public class StudentApiServlet extends HttpServlet {
 
     private StudentDAO studentDAO;
-    private ObjectMapper objectMapper;
+    private ObjectMapper mapper;
 
     @Override
     public void init() {
         studentDAO = new StudentDAOImpl();
-        objectMapper = new ObjectMapper();
+        mapper = new ObjectMapper();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
 
-        String pathInfo = req.getPathInfo();
+        try {
+            String path = req.getPathInfo();
 
-        if (pathInfo != null && pathInfo.length() > 1) {
-            int id = Integer.parseInt(pathInfo.substring(1));
-            Student student = studentDAO.getStudentById(id);
-            objectMapper.writeValue(resp.getOutputStream(), student);
-            return;
+            if (path != null && path.length() > 1) {
+                int id = Integer.parseInt(path.substring(1));
+                Student s = studentDAO.getStudentById(id);
+                if (s == null) {
+                    resp.setStatus(404);
+                    mapper.writeValue(resp.getOutputStream(), Map.of("error","Not found"));
+                    return;
+                }
+                mapper.writeValue(resp.getOutputStream(), s);
+                return;
+            }
+
+            int page = Integer.parseInt(req.getParameter("page"));
+            int size = Integer.parseInt(req.getParameter("size"));
+
+            Pagination p = new Pagination();
+            p.setPageNo(page);
+            p.setPageSize(size);
+
+            List<Student> list = studentDAO.getSelectedStudents(p);
+            int total = ((StudentDAOImpl) studentDAO).getTotalStudents();
+
+            mapper.writeValue(resp.getOutputStream(), Map.of(
+                    "data", list,
+                    "page", page,
+                    "size", size,
+                    "total", total
+            ));
+
+        } catch (Exception e) {
+            resp.setStatus(500);
+            mapper.writeValue(resp.getOutputStream(), Map.of(
+                    "error","Server error",
+                    "message", e.getMessage()
+            ));
         }
-
-        int page = Integer.parseInt(req.getParameter("page"));
-        int size = Integer.parseInt(req.getParameter("size"));
-
-        Pagination pagination = new Pagination();
-        pagination.setPageNo(page);
-        pagination.setPageSize(size);
-
-        List<Student> students = studentDAO.getSelectedStudents(pagination);
-        int total = ((StudentDAOImpl) studentDAO).getTotalStudents();
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", students);
-        response.put("page", page);
-        response.put("size", size);
-        response.put("total", total);
-
-        objectMapper.writeValue(resp.getOutputStream(), response);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-
-        Student student = objectMapper.readValue(req.getInputStream(), Student.class);
-        studentDAO.insert(student);
-
-        resp.setStatus(HttpServletResponse.SC_CREATED);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Student created successfully");
-
-        objectMapper.writeValue(resp.getOutputStream(), response);
+        try {
+            Student s = mapper.readValue(req.getInputStream(), Student.class);
+            studentDAO.insert(s);
+            resp.setStatus(201);
+            mapper.writeValue(resp.getOutputStream(), Map.of("message","Created"));
+        } catch (Exception e) {
+            resp.setStatus(500);
+            mapper.writeValue(resp.getOutputStream(), Map.of("error","Insert failed"));
+        }
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-
-        String pathInfo = req.getPathInfo();
-        int id = Integer.parseInt(pathInfo.substring(1));
-
-        Student student = objectMapper.readValue(req.getInputStream(), Student.class);
-        student.setId(id);
-
-        studentDAO.update(student);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Student updated successfully");
-
-        objectMapper.writeValue(resp.getOutputStream(), response);
+        try {
+            int id = Integer.parseInt(req.getPathInfo().substring(1));
+            Student s = mapper.readValue(req.getInputStream(), Student.class);
+            s.setId(id);
+            studentDAO.update(s);
+            mapper.writeValue(resp.getOutputStream(), Map.of("message","Updated"));
+        } catch (Exception e) {
+            resp.setStatus(500);
+            mapper.writeValue(resp.getOutputStream(), Map.of("error","Update failed"));
+        }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-
-        String pathInfo = req.getPathInfo();
-        int id = Integer.parseInt(pathInfo.substring(1));
-
-        studentDAO.delete(id);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Student deleted successfully");
-
-        objectMapper.writeValue(resp.getOutputStream(), response);
+        try {
+            int id = Integer.parseInt(req.getPathInfo().substring(1));
+            studentDAO.delete(id);
+            mapper.writeValue(resp.getOutputStream(), Map.of("message","Deleted"));
+        } catch (Exception e) {
+            resp.setStatus(500);
+            mapper.writeValue(resp.getOutputStream(), Map.of("error","Delete failed"));
+        }
     }
 }

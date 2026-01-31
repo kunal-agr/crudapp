@@ -67,7 +67,7 @@
 //            req.setAttribute("rootCause", e.getCause());
 //            req.setAttribute("errorException", e);
 ////            e.printStackTrace();  developer logs not final
-//            req.getRequestDispatcher("error.jsp").forward(req, resp);
+//            req.getRequestDispatcher("error.html").forward(req, resp);
 //        }
 //    }
 //
@@ -114,14 +114,14 @@
 //    }
 //
 //    private void showNewForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, DAOException {
-//        req.getRequestDispatcher("student-form.jsp").forward(req, resp);
+//        req.getRequestDispatcher("student-form.html").forward(req, resp);
 //    }
 //
 //    private void showEditForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, DAOException {
 //        int id = Integer.parseInt(req.getParameter("id"));
 //        Student st = studentDAO.getStudentById(id);
 //        req.setAttribute("student",st);
-//        req.getRequestDispatcher("student-form.jsp").forward(req, resp);
+//        req.getRequestDispatcher("student-form.html").forward(req, resp);
 //    }
 //
 //    private void insertStudent(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, DAOException {
