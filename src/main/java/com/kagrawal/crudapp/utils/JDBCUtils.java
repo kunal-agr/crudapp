@@ -6,24 +6,9 @@ import java.sql.SQLException;
 
 public class JDBCUtils {
 
-    private static final String URL =
-            System.getenv("DB_URL") != null
-                    ? System.getenv("DB_URL")
-                    : "jdbc:postgresql://" +
-                    System.getenv("DB_HOST") + ":" +
-                    System.getenv("DB_PORT") + "/" +
-                    System.getenv("DB_NAME");
-
-
-    private static final String USER =
-            System.getenv("DB_USER") != null
-                    ? System.getenv("DB_USER")
-                    : "postgres";
-
-    private static final String PASS =
-            System.getenv("DB_PASSWORD") != null
-                    ? System.getenv("DB_PASSWORD")
-                    : "password";
+    private static final String URL = System.getenv("DB_URL");
+    private static final String USER = System.getenv("DB_USER");
+    private static final String PASS = System.getenv("DB_PASSWORD");
 
     static {
         try {
@@ -34,6 +19,9 @@ public class JDBCUtils {
     }
 
     public static Connection fetchConnection() throws SQLException {
+        if (URL == null || USER == null || PASS == null) {
+            throw new RuntimeException("Database environment variables are missing");
+        }
         return DriverManager.getConnection(URL, USER, PASS);
     }
 }
