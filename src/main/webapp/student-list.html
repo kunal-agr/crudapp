@@ -1,24 +1,45 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>MVC CRUD APPLICATION</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <title>MVC CRUD APPLICATION</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-link { cursor: pointer; }
+        .table thead { background-color: #212529; color: white; }
+        /* Sticky header style */
+        .navbar { margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
 
-    <body class="container mt-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">CRUD System</a>
+        <div class="ms-auto d-flex align-items-center">
+                <span class="navbar-text me-3 text-white">
+                    <i class="fa-solid fa-circle-user me-1"></i>
+                    Welcome, <strong id="userName">Guest</strong>
+                </span>
+            <button onclick="logout()" class="btn btn-outline-danger btn-sm">
+                <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+            </button>
+        </div>
+    </div>
+</nav>
 
+<div class="container">
     <h2 class="text-center mb-2">MVC CRUD APPLICATION</h2>
-    <h5 class="text-center mb-4">SERVLET + REST API</h5>
+    <h5 class="text-center mb-4 text-muted">SERVLET + REST API</h5>
 
     <a href="student-form.html" class="btn btn-outline-primary mb-3">
         <i class="fa-solid fa-user-plus me-2"></i> Add Student
     </a>
 
     <table class="table table-bordered table-striped table-hover">
-        <thead class="table-dark">
-        <tr>
+        <thead>
+        <tr class="text-center">
             <th>#</th>
             <th>Name</th>
             <th>Email</th>
@@ -35,9 +56,8 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="text-muted">
-            Showing <strong id="range"></strong> of <strong id="totalRecords"></strong>
+            Showing <strong id="range">0 → 0</strong> of <strong id="totalRecords">0</strong>
         </div>
-
         <div class="d-flex align-items-center">
             <span class="me-2">Show</span>
             <select id="pageSize" class="form-select form-select-sm w-auto">
@@ -50,124 +70,148 @@
         </div>
     </div>
 
-    <nav>
+    <nav aria-label="Page navigation">
         <ul class="pagination justify-content-center" id="pagination"></ul>
     </nav>
+</div>
 
-    <script>
-        let page = 1;
-        let size = 5;
+<script>
+    let page = 1;
+    let size = 5;
 
-        const contextPath = window.location.pathname.split('/')[1];
-        const api = `/${contextPath}/api/students`;
+    const pathSegments = window.location.pathname.split('/');
+    const contextPath = pathSegments[1];
+    const api = `/${contextPath}/api/students`;
+    const authApi = `/${contextPath}/api/auth`;
 
-        function redirectError(res, path) {
-            window.location.href =
-                `error.html?status=${res.status}&message=${encodeURIComponent(res.statusText)}&path=${path}`;
-        }
+    // 1. Check Auth and Load User Data
+    function checkAuth() {
+        fetch(authApi) // Calls AuthServlet.doGet()
+            .then(res => {
+                if (res.status === 401) {
+                    window.location.href = "login.html";
+                    return;
+                }
+                return res.json();
+            })
+            .then(user => {
+                if (user && user.name) {
+                    document.getElementById("userName").innerText = user.name;
+                }
+            })
+            .catch(err => console.error("Auth check failed:", err));
+    }
 
-        function loadStudents() {
-            fetch(`${api}?page=${page}&size=${size}`)
-                .then(res => {
-                    if (!res.ok) {
-                        redirectError(res, api);
-                        throw new Error();
-                    }
-                    return res.json();
-                })
-                .then(json => {
-                    const tbody = document.getElementById("tableBody");
-                    tbody.innerHTML = "";
+    // 2. Logout function
+    function logout() {
+        if (!confirm("Are you sure you want to logout?")) return;
 
-                    if (!json.data || json.data.length === 0) {
-                        tbody.innerHTML =
-                            `<tr><td colspan="5" class="text-center">No Students Found</td></tr>`;
-                        document.getElementById("range").innerText = '0 → 0';
-                        document.getElementById("totalRecords").innerText = '0';
-                        renderPagination(0);
-                        return;
-                    }
+        fetch(`${authApi}/logout`, { method: "POST" })
+            .then(() => {
+                window.location.href = "login.html";
+            })
+            .catch(err => alert("Logout failed"));
+    }
 
-                    json.data.forEach((s, i) => {
-                        tbody.innerHTML += `
-                            <tr>
-                                <td class="text-center">${(page - 1) * size + i + 1}</td>
-                                <td class="text-center">${s.name}</td>
-                                <td class="text-center">${s.email}</td>
-                                <td class="text-center">${s.mobile}</td>
-                                <td class="text-center">
-                                    <a href="student-form.html?id=${s.id}" class="btn btn-info btn-sm">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </a>
-                                    <button class="btn btn-danger btn-sm ms-1"
-                                        onclick="deleteStudent(${s.id})">
-                                        <i class="fa-solid fa-trash-can"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    });
+    // --- Student Loading Logic ---
 
-                    const start = (page - 1) * size + 1;
-                    const end = Math.min(start + size - 1, json.total);
-
-                    document.getElementById("range").innerText = `${start} → ${end}`;
-                    document.getElementById("totalRecords").innerText = json.total;
-
-                    renderPagination(json.total);
-                })
-                .catch(() => {
-                    window.location.href =
-                        `error.html?status=500&message=Cannot connect to server&path=${api}`;
-                });
-        }
-
-        function renderPagination(total) {
-            const totalPages = Math.ceil(total / size);
-            const ul = document.getElementById("pagination");
-            ul.innerHTML = "";
-
-            const add = (label, p, disabled, active) => {
-                ul.innerHTML += `
-                    <li class="page-item ${disabled ? "disabled" : ""} ${active ? "active" : ""}">
-                        <a class="page-link" href="#" onclick="go(${p})">${label}</a>
-                    </li>`;
-            };
-
-            add("First", 1, page === 1);
-            add("«", page - 1, page === 1);
-
-            for (let i = 1; i <= totalPages; i++) add(i, i, false, i === page);
-
-            add("»", page + 1, page === totalPages);
-            add("Last", totalPages, page === totalPages);
-        }
-
-        function go(p) {
-            if (p < 1) return;
-            page = p;
-            loadStudents();
-        }
-
-        function deleteStudent(id) {
-            if (!confirm("Are you sure?")) return;
-
-            fetch(`${api}/${id}`, { method: "DELETE" })
-                .then(res => {
-                    if (!res.ok) {
-                        redirectError(res, `${api}/${id}`);
-                        throw new Error();
-                    }
-                    loadStudents();
-                })
-                .catch(() => {
-                    window.location.href =
-                        `error.html?status=500&message=Delete failed&path=${api}/${id}`;
-                });
-        }
-
+    document.getElementById("pageSize").addEventListener("change", function() {
+        size = parseInt(this.value);
+        page = 1;
         loadStudents();
-    </script>
+    });
 
-    </body>
+    function loadStudents() {
+        fetch(`${api}?page=${page}&size=${size}`)
+            .then(res => {
+                if (res.status === 401) {
+                    window.location.href = "login.html";
+                    throw new Error("Unauthorized");
+                }
+                return res.json();
+            })
+            .then(json => {
+                const tbody = document.getElementById("tableBody");
+                tbody.innerHTML = "";
+
+                if (!json.data || json.data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center">No Students Found</td></tr>`;
+                    updateMeta(0, 0);
+                    return;
+                }
+
+                json.data.forEach((s, i) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="text-center">${(page - 1) * size + i + 1}</td>
+                            <td>${s.name}</td>
+                            <td>${s.email}</td>
+                            <td class="text-center">${s.mobile}</td>
+                            <td class="text-center">
+                                <a href="student-form.html?id=${s.id}" class="btn btn-info btn-sm">
+                                    <i class="fa-solid fa-pen-to-square text-white"></i>
+                                </a>
+                                <button class="btn btn-danger btn-sm ms-1" onclick="deleteStudent(${s.id})">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                });
+
+                updateMeta(json.total, json.data.length);
+            })
+            .catch(err => console.error(err));
+    }
+
+    function updateMeta(total, currentCount) {
+        const start = total === 0 ? 0 : (page - 1) * size + 1;
+        const end = (page - 1) * size + currentCount;
+        document.getElementById("range").innerText = `${start} → ${end}`;
+        document.getElementById("totalRecords").innerText = total;
+        renderPagination(total);
+    }
+
+    function renderPagination(total) {
+        const totalPages = Math.ceil(total / size) || 1;
+        const ul = document.getElementById("pagination");
+        ul.innerHTML = "";
+
+        const add = (label, p, disabled, active) => {
+            const li = document.createElement('li');
+            li.className = `page-item ${disabled ? "disabled" : ""} ${active ? "active" : ""}`;
+            li.innerHTML = `<a class="page-link" onclick="!${disabled} && go(${p})">${label}</a>`;
+            ul.appendChild(li);
+        };
+
+        add("First", 1, page === 1);
+        add("«", page - 1, page === 1);
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
+                add(i, i, false, i === page);
+            } else if (i === page - 2 || i === page + 2) {
+                add("...", i, true, false);
+            }
+        }
+
+        add("»", page + 1, page === totalPages);
+        add("Last", totalPages, page === totalPages);
+    }
+
+    function go(p) {
+        page = p;
+        loadStudents();
+    }
+
+    function deleteStudent(id) {
+        if (!confirm("Are you sure?")) return;
+        fetch(`${api}/${id}`, { method: "DELETE" })
+            .then(res => { if (res.ok) loadStudents(); });
+    }
+
+    // Initialize page
+    checkAuth();
+    loadStudents();
+</script>
+</body>
 </html>

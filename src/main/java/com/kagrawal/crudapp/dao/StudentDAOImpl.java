@@ -97,15 +97,19 @@ public class StudentDAOImpl implements StudentDAO {
 
     @Override
     public List<Student> getSelectedStudents(Pagination pagination) {
+
         List<Student> studentList = new ArrayList<>();
 
-        String sql = BASE_SQL + PAGE_SQL;
+        String sql = BASE_SQL + " ORDER BY id LIMIT ? OFFSET ?";
+
+        int limit = pagination.getPageSize();
+        int offset = (pagination.getPageNo() - 1) * pagination.getPageSize(); // ✅ FIX
 
         try (Connection con = JDBCUtils.fetchConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
 
-            stmt.setInt(1, pagination.getPageSize());
-            stmt.setInt(2, pagination.getOffset());
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -117,12 +121,14 @@ public class StudentDAOImpl implements StudentDAO {
                     studentList.add(student);
                 }
             }
+
         } catch (SQLException e) {
             throw new DAOException("Unable to fetch students", e);
         }
 
         return studentList;
     }
+
 
     public int getTotalStudents() {
         try (Connection con = JDBCUtils.fetchConnection();
